@@ -47,7 +47,7 @@ export default function App() {
 
   // Fetch dữ liệu từ API
   useEffect(() => {
-    fetch('https://res.cloudinary.com/dfeujdemv/raw/upload/v1775540411/battery-assembly-quiz_t7r6wu.json')
+    fetch('https://res.cloudinary.com/dfeujdemv/raw/upload/v1775550377/data_abstnt.json')
       .then(res => res.json())
       .then(data => {
         if (data && data.length > 0) {
