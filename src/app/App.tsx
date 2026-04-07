@@ -1,6 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, ArrowLeft, Check, X as XIcon, RotateCcw, Menu, Info, MessageSquare } from 'lucide-react';
 
+// Thuật toán xáo trộn mảng (Fisher-Yates Shuffle)
+const shuffleArray = (array) => {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
+};
+
 // Dữ liệu dự phòng trường hợp không gọi được API
 const fallbackData = [
   {
@@ -56,7 +66,11 @@ export default function App() {
 
   const currentQ = questions[currentIndex];
 
-  const handleStart = () => setScreen('quiz');
+  const handleStart = () => {
+    // Xáo trộn mảng câu hỏi mỗi khi bắt đầu bài làm mới
+    setQuestions(prev => shuffleArray(prev));
+    setScreen('quiz');
+  };
 
   const handleOptionClick = (option) => {
     if (answers[currentIndex]) return;
@@ -87,34 +101,35 @@ export default function App() {
 
   const handleSubmit = () => {
     setScreen('result');
+    setShowGrid(false);
   };
 
   const handleRetry = () => {
     setAnswers({});
     setCurrentIndex(0);
     setScore(0);
-    setScreen('start');
+    setScreen('start'); // Trở về màn hình Start để người dùng bấm Bắt đầu (sẽ xáo trộn lại câu hỏi)
   };
 
   // Render Loader
   if (loading) {
     return (
-      <div className="min-h-screen bg-[#FFFFFF] flex flex-col items-center justify-center font-tesla">
+      <div className="min-h-screen bg-[#ffffff] flex flex-col items-center justify-center font-future">
         <style dangerouslySetInnerHTML={{ __html: customStyles }} />
-        <div className="w-8 h-8 border-[3px] border-[#EEEEEE] border-t-[#3E6AE1] rounded-full animate-spin mb-4" />
+        <div className="w-8 h-8 border-[2px] border-black/10 border-t-[#010120] rounded-full animate-spin mb-4" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen font-tesla bg-[#FFFFFF] text-[#171A20] selection:bg-[#3E6AE1] selection:text-white">
+    <div className="min-h-screen font-future transition-colors duration-500 bg-[#ffffff] text-[#000000] selection:bg-[#bdbbff]/30">
       <style dangerouslySetInnerHTML={{ __html: customStyles }} />
       
-      {/* Navigation Bar - Frosted Glass */}
-      <header className="fixed top-0 w-full z-40 flex items-center justify-between px-6 py-4 bg-[rgba(255,255,255,0.85)] backdrop-blur-lg transition-tesla">
+      {/* Navigation Bar */}
+      <header className="fixed top-0 w-full z-40 flex items-center justify-between px-6 py-4 transition-colors duration-500 bg-white/80 border-b border-black/5 backdrop-blur-md">
         <div className="flex items-center">
-          <span className="text-[15px] font-[500] tracking-[0.1em] text-[#171A20] uppercase">
-            Module Đánh Giá
+          <span className="font-future text-[18px] font-[500] tracking-[-0.18px] text-black">
+            together<span className="text-[#ef2cc1]">_</span>assess
           </span>
         </div>
         
@@ -122,86 +137,91 @@ export default function App() {
           <div className="flex items-center gap-2 sm:gap-4">
             <button 
               onClick={() => setShowGrid(true)}
-              className="flex items-center gap-2 bg-transparent px-3 sm:px-4 py-1 h-[32px] rounded-[4px] text-[14px] font-[500] text-[#171A20] hover:bg-[#F4F4F4] transition-tesla"
+              className="flex items-center gap-2 bg-black/[0.04] px-3 sm:px-4 py-1 h-[32px] rounded-[4px] text-[14px] font-[500] text-black hover:bg-black/[0.08] transition-all border border-black/[0.08]"
             >
-              <span className="hidden sm:inline">Danh sách câu hỏi</span>
+              <span className="hidden sm:inline font-mono text-[11px] uppercase tracking-[0.055px] pt-[2px]">Danh sách câu</span>
               <Menu className="w-4 h-4 sm:hidden" />
             </button>
             <button
               onClick={handleSubmit}
-              className="flex items-center justify-center bg-[#3E6AE1] text-[#FFFFFF] px-4 py-1 h-[32px] rounded-[4px] text-[14px] font-[500] hover:bg-[#3258B8] transition-tesla border-[2px] border-transparent focus:border-[#3E6AE1]/30 focus:shadow-[inset_0_0_0_2px_#3E6AE1]"
+              className="flex items-center justify-center bg-[#010120] text-white px-4 py-1 h-[32px] rounded-[4px] text-[14px] font-[500] hover:opacity-90 transition-opacity"
             >
-              Nộp bài
+              <span className="font-mono text-[11px] uppercase tracking-[0.055px] pt-[2px]">Nộp bài</span>
             </button>
           </div>
         )}
       </header>
 
-      <main className={`w-full flex flex-col min-h-screen ${screen === 'start' ? 'pt-0' : 'pt-[60px]'}`}>
+      <main className={`w-full flex flex-col min-h-screen ${screen === 'start' ? 'pt-0 together-gradient' : 'pt-[64px]'}`}>
+        
         {/* --- START SCREEN --- */}
         {screen === 'start' && (
-          <div className="relative flex-1 flex flex-col items-center justify-center text-center w-full min-h-screen">
-            {/* Cinematic Photography Background */}
-            <div className="absolute inset-0 z-0 overflow-hidden">
-              <img 
-                src="https://images.unsplash.com/photo-1560958089-b8a1929cea89?auto=format&fit=crop&q=80&w=2000" 
-                alt="Tesla Cinematic Hero" 
-                className="w-full h-full object-cover"
-              />
-              <div className="absolute inset-0 bg-black/30" />
-            </div>
+          <div className="relative flex-1 flex flex-col items-center justify-center text-center w-full min-h-screen px-6">
+            <div className="relative z-10 flex-1 flex flex-col justify-center items-center w-full mt-[60px] max-w-[800px] mx-auto">
+              
+              <div className="mb-6 px-3 py-1 bg-black/[0.04] border border-black/[0.08] rounded-[4px]">
+                <span className="font-mono text-[11px] font-[500] uppercase tracking-[0.08px] text-black">
+                  Bài kiểm tra kiến thức
+                </span>
+              </div>
 
-            <div className="relative z-10 flex-1 flex flex-col justify-center items-center w-full px-6 mt-[60px] max-w-[800px] mx-auto">
-              <h1 className="text-[40px] font-[500] text-[#FFFFFF] leading-[1.2] mb-4">
+              <h1 className="text-[48px] md:text-[64px] font-[500] text-black leading-[1.0] md:leading-[1.10] tracking-[-1.5px] md:tracking-[-1.92px] mb-6">
                 Lắp Ráp Pin Xe Điện
               </h1>
-              <p className="text-[14px] font-[400] text-[#FFFFFF] mb-10 max-w-[600px] leading-[1.43]">
-                Bài đánh giá kiến thức chuyên môn về quy trình lắp ráp, an toàn cháy nổ và quản lý năng lượng (BMS) trên khối pin xe điện. Hãy chọn phương án chính xác nhất.
+              
+              <p className="text-[16px] md:text-[18px] font-[400] text-black/70 mb-10 max-w-[600px] leading-[1.30] tracking-[-0.18px]">
+                Đánh giá năng lực chuyên môn về quy trình lắp ráp, an toàn cháy nổ và quản lý năng lượng (BMS) trên hạ tầng pin xe điện.
               </p>
             </div>
             
-            <div className="relative z-10 pb-24 w-full flex flex-col sm:flex-row justify-center gap-4 px-6">
+            <div className="relative z-10 pb-24 w-full flex justify-center px-6">
               <button 
                 onClick={handleStart}
-                className="bg-[#3E6AE1] text-[#FFFFFF] text-[14px] font-[500] rounded-[4px] min-h-[40px] w-full sm:w-[260px] hover:bg-[#3258B8] transition-tesla border-[3px] border-transparent focus:border-[#3E6AE1]/30 focus:shadow-[inset_0_0_0_2px_#3E6AE1]"
+                className="bg-[#010120] text-white text-[16px] font-[500] rounded-[4px] px-8 py-3 w-full sm:w-auto hover:opacity-90 transition-opacity tracking-[-0.16px]"
               >
-                Bắt đầu
+                Bắt đầu đánh giá
               </button>
             </div>
           </div>
         )}
 
-        {/* --- QUIZ SCREEN --- */}
+        {/* --- QUIZ SCREEN (LIGHT ZONE) --- */}
         {screen === 'quiz' && (
-          <div className="flex-1 flex flex-col w-full">
+          <div className="flex-1 flex flex-col w-full bg-[#ffffff]">
             
             {/* Main Content Area */}
-            <div className="flex-1 flex flex-col max-w-[800px] mx-auto w-full px-6 pt-[10vh] pb-[120px]">
-              <h2 className="text-[28px] md:text-[32px] font-[500] leading-[1.2] text-[#171A20] mb-10">
+            <div className="flex-1 flex flex-col max-w-[800px] mx-auto w-full px-6 pt-[6vh] pb-[140px]">
+              
+              <div className="mb-6 flex items-center">
+                <span className="font-mono text-[11px] font-[500] uppercase tracking-[0.08px] text-black bg-black/[0.04] border border-black/[0.08] px-2 py-1 rounded-[4px]">
+                  Câu hỏi {currentIndex + 1} / {questions.length}
+                </span>
+              </div>
+
+              <h2 className="text-[28px] md:text-[32px] font-[500] leading-[1.15] tracking-[-0.42px] text-black mb-10">
                 {currentQ.q}
               </h2>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 {currentQ.options.map((opt, idx) => {
                   const isAnswered = !!answers[currentIndex];
                   const isSelected = answers[currentIndex] === opt;
                   const isCorrect = opt.charAt(0) === currentQ.answer;
                   
-                  let optionClasses = "w-full text-left px-5 py-4 rounded-[4px] border text-[14px] font-[400] leading-[1.43] flex items-start gap-4 outline-none transition-tesla min-h-[56px] ";
+                  let optionClasses = "w-full text-left px-5 py-4 rounded-[4px] border text-[16px] font-[400] tracking-[-0.16px] leading-[1.3] flex items-start gap-4 outline-none transition-all min-h-[56px] ";
                   
-                  // Áp dụng màu semantic (Đúng/Sai) để đồng bộ với bản thiết kế Legend mới
                   if (!isAnswered) {
-                    optionClasses += "bg-[#FFFFFF] border-[#D0D1D2] text-[#393C41] hover:bg-[#F4F4F4]";
+                    optionClasses += "bg-white border-black/[0.08] text-black hover:bg-black/[0.02]";
                   } else {
                     optionClasses += "cursor-default ";
                     if (isSelected && isCorrect) {
-                      optionClasses += "border-[#34C759] bg-[#F4F4F4] text-[#171A20]"; // Highlighted correct (Green)
+                      optionClasses += "border-[#bdbbff] bg-[#bdbbff]/10 text-black"; 
                     } else if (isSelected && !isCorrect) {
-                      optionClasses += "border-[#FF3B30] bg-[#F4F4F4] text-[#171A20]"; // Highlighted wrong (Red)
+                      optionClasses += "border-[#fc4c02] bg-[#fc4c02]/10 text-black"; 
                     } else if (!isSelected && isCorrect) {
-                      optionClasses += "border-[#34C759] text-[#171A20] bg-[#FFFFFF]"; // Show correct answer quietly
+                      optionClasses += "border-[#bdbbff]/50 text-black bg-transparent"; 
                     } else {
-                      optionClasses += "border-[#EEEEEE] text-[#8E8E8E] bg-[#FFFFFF]"; // Muted wrong answer
+                      optionClasses += "border-black/5 text-black/40 bg-transparent"; 
                     }
                   }
 
@@ -212,18 +232,10 @@ export default function App() {
                       disabled={isAnswered}
                       className={optionClasses}
                     >
-                      <div className="w-5 h-5 shrink-0 flex items-center justify-center mt-0.5">
-                        {isAnswered && isSelected && isCorrect ? (
-                          <Check className="w-5 h-5 text-[#34C759]" />
-                        ) : isAnswered && isSelected && !isCorrect ? (
-                          <XIcon className="w-5 h-5 text-[#FF3B30]" />
-                        ) : isAnswered && !isSelected && isCorrect ? (
-                          <Check className="w-5 h-5 text-[#34C759]" />
-                        ) : (
-                          <span className="text-[14px] font-[500]">{['A', 'B', 'C', 'D'][idx]}</span>
-                        )}
+                      <div className="w-6 h-6 shrink-0 flex items-center justify-center mt-[-2px]">
+                        <span className="font-mono text-[12px] font-[500]">{['A', 'B', 'C', 'D'][idx]}</span>
                       </div>
-                      <span className="flex-1 pt-[1px]">{opt.substring(3)}</span>
+                      <span className="flex-1">{opt.substring(3)}</span>
                     </button>
                   );
                 })}
@@ -231,24 +243,25 @@ export default function App() {
 
               {/* Explanation Callout */}
               {answers[currentIndex] && (
-                <div className="mt-8 bg-[#F4F4F4] p-5 rounded-[4px] animate-fade-in">
+                <div className="mt-8 bg-black/[0.02] border border-black/[0.08] p-5 rounded-[4px] animate-fade-in shadow-together">
                   <div className="flex items-center gap-3 mb-3">
-                    <Info className="w-5 h-5 text-[#5C5E62]" />
-                    <span className="text-[15px] font-[500] text-[#171A20]">Giải thích</span>
+                    <span className="font-mono text-[11px] font-[500] uppercase tracking-[0.08px] text-[#010120]">
+                      Giải thích
+                    </span>
                   </div>
-                  <p className="text-[14px] text-[#5C5E62] font-[400] leading-[1.5] pl-8">
+                  <p className="text-[15px] text-black/80 font-[400] leading-[1.40] tracking-[-0.16px]">
                     {currentQ.explain}
                   </p>
                 </div>
               )}
             </div>
 
-            {/* Sticky Bottom Navigation - Unified Footer */}
-            <div className="fixed bottom-0 left-0 w-full bg-[#FFFFFF] border-t border-[#EEEEEE] z-30">
-              {/* Subtle Progress Bar */}
-              <div className="w-full h-[2px] bg-[#F4F4F4]">
+            {/* Sticky Bottom Navigation */}
+            <div className="fixed bottom-0 left-0 w-full bg-white/95 backdrop-blur-md border-t border-black/5 z-30">
+              {/* Progress Bar */}
+              <div className="w-full h-[2px] bg-black/5">
                 <div 
-                  className="h-full bg-[#171A20] transition-all duration-[330ms] ease-[cubic-bezier(0.5,0,0,0.75)]" 
+                  className="h-full bg-[#ef2cc1] transition-all duration-500 ease-out" 
                   style={{ width: `${((currentIndex + 1) / questions.length) * 100}%` }}
                 />
               </div>
@@ -257,22 +270,19 @@ export default function App() {
                 <button
                   onClick={handlePrev}
                   disabled={currentIndex === 0}
-                  className="flex items-center justify-center text-[#5C5E62] hover:text-[#171A20] disabled:opacity-30 disabled:hover:text-[#5C5E62] transition-tesla font-[500] text-[14px] h-[40px] px-2"
+                  className="flex items-center justify-center text-black/50 hover:text-black disabled:opacity-30 disabled:hover:text-black/50 transition-colors font-[500] text-[15px] h-[40px] tracking-[-0.16px]"
                 >
                   <ArrowLeft className="w-4 h-4 mr-2" />
                   <span className="hidden sm:inline">Câu trước</span>
                 </button>
                 
-                <div className="text-[14px] font-[500] text-[#8E8E8E]">
+                <div className="font-mono text-[11px] font-[500] uppercase tracking-[0.08px] text-black/50">
                   {currentIndex + 1} / {questions.length}
                 </div>
 
                 <button
                   onClick={currentIndex < questions.length - 1 ? handleNext : handleSubmit}
-                  className={`flex items-center justify-center rounded-[4px] font-[500] text-[14px] transition-tesla min-h-[40px] px-6 border-[3px] border-transparent focus:shadow-[inset_0_0_0_2px_#3E6AE1]
-                    ${currentIndex < questions.length - 1 
-                      ? 'bg-[#F4F4F4] text-[#171A20] hover:bg-[#EAEAEA]' 
-                      : 'bg-[#3E6AE1] text-[#FFFFFF] hover:bg-[#3258B8]'}`}
+                  className="flex items-center justify-center rounded-[4px] font-[500] text-[15px] tracking-[-0.16px] transition-all min-h-[40px] px-6 bg-[#010120] text-white hover:opacity-90"
                 >
                   <span className={currentIndex < questions.length - 1 ? 'mr-2' : ''}>
                     {currentIndex < questions.length - 1 ? "Tiếp theo" : "Hoàn tất"}
@@ -282,26 +292,26 @@ export default function App() {
               </div>
             </div>
 
-            {/* Bottom Sheet Grid (Modal) - Flat, no shadow, overlay opacity */}
+            {/* Bottom Sheet Grid (Modal) */}
             {showGrid && (
               <div 
-                className="fixed inset-0 z-50 flex items-end justify-center bg-[rgba(128,128,128,0.65)] transition-tesla"
+                className="fixed inset-0 z-50 flex items-end justify-center bg-[#010120]/20 backdrop-blur-sm transition-all"
                 onClick={(e) => { if(e.target === e.currentTarget) setShowGrid(false) }}
               >
-                <div className="w-full bg-[#FFFFFF] pb-[calc(24px+env(safe-area-inset-bottom))] animate-slide-up relative max-h-[85vh] flex flex-col">
+                <div className="w-full bg-white border-t border-black/10 pb-[calc(24px+env(safe-area-inset-bottom))] animate-slide-up relative max-h-[85vh] flex flex-col shadow-[0_-10px_40px_rgba(1,1,32,0.1)]">
                   
                   <div className="flex items-center justify-between mb-6 max-w-[800px] mx-auto w-full px-6 pt-6 flex-shrink-0">
                     <div>
-                      <h3 className="font-[500] text-[17px] text-[#171A20] mb-1">
+                      <h3 className="font-mono text-[11px] font-[500] uppercase tracking-[0.08px] text-black mb-1">
                         Danh sách câu hỏi
                       </h3>
-                      <p className="font-[400] text-[14px] text-[#5C5E62]">
+                      <p className="font-[400] text-[14px] text-black/50 tracking-[-0.16px]">
                         Đã trả lời {Object.keys(answers).length} / {questions.length}
                       </p>
                     </div>
                     <button 
                       onClick={() => setShowGrid(false)}
-                      className="w-8 h-8 flex items-center justify-center text-[#5C5E62] hover:bg-[#F4F4F4] rounded-[4px] transition-tesla"
+                      className="w-8 h-8 flex items-center justify-center text-black/50 hover:bg-black/5 hover:text-black rounded-[4px] transition-colors"
                     >
                       <XIcon className="w-5 h-5" />
                     </button>
@@ -310,19 +320,19 @@ export default function App() {
                   {/* Scrollable Area */}
                   <div className="overflow-y-auto flex-1 px-6">
                     
-                    {/* Legend Banner (Chú giải) */}
-                    <div className="flex flex-wrap items-center gap-6 justify-center bg-[#F4F4F4] p-4 rounded-[4px] mb-8 max-w-[800px] mx-auto text-[14px] text-[#393C41]">
+                    {/* Legend Banner */}
+                    <div className="flex flex-wrap items-center gap-6 justify-center bg-black/[0.02] border border-black/[0.08] p-4 rounded-[4px] mb-8 max-w-[800px] mx-auto text-[14px] text-black/70 tracking-[-0.16px]">
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-[3px] border border-[#D0D1D2] bg-[#FFFFFF]" /> Chưa làm
+                        <div className="w-3 h-3 rounded-[2px] border border-black/20 bg-transparent" /> Chưa làm
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-[3px] border border-[#34C759] bg-[#FFFFFF]" /> Đúng
+                        <div className="w-3 h-3 rounded-[2px] border border-[#bdbbff] bg-[#bdbbff]/20" /> Đúng
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-[3px] border border-[#FF3B30] bg-[#FFFFFF]" /> Sai
+                        <div className="w-3 h-3 rounded-[2px] border border-[#fc4c02] bg-[#fc4c02]/20" /> Sai
                       </div>
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 rounded-[3px] border border-[#3E6AE1] bg-[#FFFFFF]" /> Hiện tại
+                        <div className="w-3 h-3 rounded-[2px] border border-[#010120] bg-[#010120]" /> Hiện tại
                       </div>
                     </div>
 
@@ -337,18 +347,18 @@ export default function App() {
                           isCorrect = answers[idx].charAt(0) === q.answer;
                         }
 
-                        let btnClasses = "aspect-square flex items-center justify-center font-[500] text-[14px] rounded-[4px] border transition-tesla relative ";
+                        let btnClasses = "aspect-square flex items-center justify-center font-mono text-[12px] rounded-[4px] border transition-all relative ";
                         
                         if (!isAnswered) {
-                          btnClasses += "border-[#D0D1D2] bg-[#FFFFFF] text-[#393C41] hover:bg-[#F4F4F4] ";
+                          btnClasses += "border-black/10 bg-transparent text-black/60 hover:bg-black/5 hover:text-black ";
                         } else if (isCorrect) {
-                          btnClasses += "border-[#34C759] bg-[#FFFFFF] text-[#34C759] ";
+                          btnClasses += "border-[#bdbbff] bg-[#bdbbff]/10 text-black ";
                         } else {
-                          btnClasses += "border-[#FF3B30] bg-[#FFFFFF] text-[#FF3B30] ";
+                          btnClasses += "border-[#fc4c02] bg-[#fc4c02]/10 text-black ";
                         }
 
                         if (isCurrent) {
-                          btnClasses += "!border-[#3E6AE1] ring-1 ring-offset-2 ring-[#3E6AE1] ";
+                          btnClasses += "!border-[#010120] !bg-[#010120] !text-white ";
                         }
 
                         return (
@@ -372,77 +382,87 @@ export default function App() {
           </div>
         )}
 
-        {/* --- RESULT SCREEN --- */}
+        {/* --- RESULT SCREEN (LIGHT ZONE) --- */}
         {screen === 'result' && (
-          <div className="flex-1 flex flex-col items-center justify-center pt-[10vh] pb-24 px-6 animate-fade-in w-full max-w-[800px] mx-auto">
+          <div className="flex-1 flex flex-col items-center justify-center pt-[10vh] pb-24 px-6 animate-fade-in w-full max-w-[1000px] mx-auto together-gradient">
             
             <div className="w-full text-center">
-              <h2 className="text-[40px] font-[500] text-[#171A20] leading-[1.2] mb-2">
-                Kết Quả
-              </h2>
-              
-              <div className="flex items-baseline justify-center gap-2 mt-8 mb-4">
-                <span className="text-[72px] font-[500] text-[#171A20] leading-[1]">
-                  {score}
-                </span>
-                <span className="text-[24px] font-[400] text-[#8E8E8E]">
-                  / {questions.length}
+              <div className="mb-8">
+                <span className="font-mono text-[11px] font-[500] uppercase tracking-[0.08px] text-black bg-black/[0.04] border border-black/[0.08] px-3 py-1 rounded-[4px]">
+                  Hoàn tất đánh giá
                 </span>
               </div>
               
-              <p className="text-[14px] font-[400] text-[#393C41] mb-12 max-w-[400px] mx-auto">
-                {score === questions.length ? "Tuyệt vời. Bạn đã nắm vững toàn bộ quy trình lắp ráp và an toàn." : 
-                 score >= questions.length / 2 ? "Kết quả tốt. Vui lòng xem lại các câu hỏi chưa chính xác để củng cố kiến thức." : 
-                 "Chưa đạt yêu cầu. Bạn cần xem lại tài liệu kỹ thuật về pin xe điện."}
-              </p>
+              <div className="bg-white border border-black/[0.08] rounded-[8px] p-8 md:p-12 shadow-together max-w-[600px] mx-auto">
+                <h2 className="font-mono text-[14px] font-[500] uppercase tracking-[0.08px] text-black/50 mb-4">
+                  Điểm số của bạn
+                </h2>
+                
+                <div className="flex items-baseline justify-center gap-2 mb-8">
+                  <span className="text-[80px] md:text-[100px] font-[500] text-black leading-[1] tracking-[-1.92px]">
+                    {score}
+                  </span>
+                  <span className="text-[32px] md:text-[40px] font-[400] text-black/30 tracking-[-0.8px]">
+                    / {questions.length}
+                  </span>
+                </div>
+                
+                <p className="text-[16px] font-[400] text-black/70 mb-10 leading-[1.4] tracking-[-0.16px]">
+                  {score === questions.length ? "Kết quả xuất sắc. Nền tảng kiến thức hạ tầng AI và xe điện của bạn rất vững chắc." : 
+                   score >= questions.length / 2 ? "Kết quả khả quan. Tuy nhiên cần rà soát lại các giao thức an toàn chưa chính xác." : 
+                   "Chưa đạt tiêu chuẩn. Vui lòng tham khảo lại tài liệu kỹ thuật."}
+                </p>
 
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <button 
-                  onClick={handleRetry}
-                  className="bg-[#FFFFFF] text-[#171A20] border border-[#D0D1D2] rounded-[4px] min-h-[40px] px-8 text-[14px] font-[500] hover:bg-[#F4F4F4] transition-tesla flex items-center justify-center gap-2"
-                >
-                  <RotateCcw className="w-4 h-4" />
-                  Làm lại
-                </button>
+                <div className="flex flex-col justify-center">
+                  <button 
+                    onClick={handleRetry}
+                    className="bg-[#010120] text-white rounded-[4px] px-8 py-3 text-[16px] font-[500] tracking-[-0.16px] hover:opacity-90 transition-opacity flex items-center justify-center gap-2 w-full sm:w-auto mx-auto"
+                  >
+                    <RotateCcw className="w-4 h-4" />
+                    Thực hiện lại
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         )}
       </main>
-
-      {/* Persistent Chatbot Button (Optional structural element) */}
-      <div className="fixed bottom-6 right-6 z-40 hidden md:flex">
-        <button className="bg-[#FFFFFF] border border-[#D0D1D2] rounded-full p-3 text-[#5C5E62] hover:bg-[#F4F4F4] transition-tesla">
-          <MessageSquare className="w-5 h-5" />
-        </button>
-      </div>
-
     </div>
   );
 }
 
-// Inline CSS định nghĩa các phong cách cốt lõi: không shadow, timing chuẩn 0.33s cubic-bezier
+// Inline CSS định nghĩa các phong cách cốt lõi của Together AI
 const customStyles = `
-  /* Fallback cho Universal Sans (sử dụng system font để đảm bảo sự tối giản và hình học) */
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500&family=JetBrains+Mono:wght@400;500&display=swap');
+
   :root {
-    --font-tesla: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    /* Using Inter to approximate "The Future" with heavy letter-spacing applied via Tailwind classes */
+    --font-future: 'Inter', -apple-system, system-ui, sans-serif;
+    /* Using JetBrains Mono to approximate "PP Neue Montreal Mono" */
+    --font-mono: 'JetBrains Mono', ui-monospace, monospace;
   }
 
-  .font-tesla {
-    font-family: var(--font-tesla);
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
+  .font-future { font-family: var(--font-future); }
+  .font-mono { font-family: var(--font-mono); }
+
+  /* Pastel Cloud Gradient Background for Light Zones */
+  .together-gradient {
+    background-color: #ffffff;
+    background-image: 
+      radial-gradient(circle at 15% 10%, rgba(239, 44, 193, 0.08) 0%, transparent 40%), 
+      radial-gradient(circle at 85% 20%, rgba(189, 187, 255, 0.15) 0%, transparent 40%),
+      radial-gradient(circle at 50% 80%, rgba(252, 76, 2, 0.06) 0%, transparent 50%);
   }
 
-  /* Universal Timing 0.33s cho tất cả tương tác */
-  .transition-tesla {
-    transition: all 0.33s cubic-bezier(0.5, 0, 0, 0.75);
+  /* Distinctive tinted shadow */
+  .shadow-together {
+    box-shadow: rgba(1, 1, 32, 0.1) 0px 4px 10px;
   }
 
   /* Custom Animations */
   @keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
   }
 
   @keyframes slideUp {
@@ -451,14 +471,14 @@ const customStyles = `
   }
 
   .animate-fade-in {
-    animation: fadeIn 0.33s cubic-bezier(0.5, 0, 0, 0.75) forwards;
+    animation: fadeIn 0.4s ease-out forwards;
   }
 
   .animate-slide-up {
-    animation: slideUp 0.33s cubic-bezier(0.5, 0, 0, 0.75) forwards;
+    animation: slideUp 0.3s ease-out forwards;
   }
 
-  /* Tắt thanh cuộn để giữ UI sạch sẽ (Minimal Scrollbar) */
+  /* Clean minimal scrollbar */
   ::-webkit-scrollbar {
     width: 6px;
     height: 6px;
@@ -467,10 +487,10 @@ const customStyles = `
     background: transparent;
   }
   ::-webkit-scrollbar-thumb {
-    background: #D0D1D2;
-    border-radius: 3px;
+    background: rgba(128, 128, 128, 0.3);
+    border-radius: 4px;
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: #8E8E8E;
+    background: rgba(128, 128, 128, 0.5);
   }
 `;
